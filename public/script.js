@@ -31,6 +31,28 @@ var toDoList =
     ? new Array()
     : JSON.parse(localStorage.getItem("toDoList"));
 
+//function to get data from api
+const getData = async () => {
+  const response = await fetch("http://localhost:3030/api");
+  const data = await response.json();
+  console.log(data);
+  data.forEach((element) => {
+    let task ={
+      date: new Date(element.date),
+      time: element.time,
+      name: element.name,
+      description: element.description,
+    }
+    if(!toDoList.includes(task))
+      toDoList.push(task);
+    } 
+  );
+  await renderToDoList();
+  await renderCalendar();
+};
+
+getData();
+
 const renderCalendar = () => {
   let firstDayofMonth = new Date(currYear, currMonth, 1).getDay() - 1, 
     lastDateofMonth = new Date(currYear, currMonth + 1, 0).getDate(), 
@@ -77,10 +99,10 @@ renderCalendar();
 
 const renderToDoList = () => {
   let liTag = "";
-  toDoList =
-    JSON.parse(localStorage.getItem("toDoList")) == null
-      ? new Array()
-      : JSON.parse(localStorage.getItem("toDoList"));
+  // toDoList =
+  //   JSON.parse(localStorage.getItem("toDoList")) == null
+  //     ? new Array()
+  //     : JSON.parse(localStorage.getItem("toDoList"));
   console.log(toDoList);
   if (toDoList === null) {
     return;
@@ -124,7 +146,16 @@ function addTask(e) {
   };
   console.log(toDoList);
   toDoList.push(newTask);
-  localStorage.setItem("toDoList", JSON.stringify(toDoList));
+  fetch("http://localhost:3030/api", {
+    method: "POST",
+    body: JSON.stringify(newTask),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  }).then((response) => {}).catch((err) => {
+    localStorage.setItem("toDoList", JSON.stringify(toDoList));
+  });
+
   renderToDoList();
   renderCalendar();
   console.log(e);
